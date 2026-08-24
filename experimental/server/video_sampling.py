@@ -904,16 +904,26 @@ def _positive_float(value, name: str) -> float:
     return out
 
 
-def _probe_image_size(path: str) -> Tuple[int, int]:
+def _probe_image_size(source: str) -> Tuple[int, int]:
     """(width, height) of an image file via a header-only av probe."""
+    import base64  # lazy: decode dependency
+
     import av  # lazy: decode dependency
+
     try:
-        with av.open(path) as container:
+        if source.startswith("data:image/"):
+            header, encoded = source.split(",", 1)
+            if ";base64" not in header:
+                raise ValueError("image data URI is not Base64 encoded")
+
+            data = base64.b64decode(encoded)
+            source = io.BytesIO(data)
+        with av.open(source) as container:
             stream = container.streams.video[0]
             return int(stream.width or 0), int(stream.height or 0)
     except (av.error.FFmpegError, IndexError) as exc:
         raise ValueError(
-            f"cannot read video frame image {path!r}: {exc}") from exc
+            f"cannot read video frame image {source!r}: {exc}") from exc
 
 
 def load_video_buffer(rt_module,

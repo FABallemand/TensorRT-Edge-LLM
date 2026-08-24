@@ -2020,12 +2020,15 @@ def _load_image_buffers(rt_module,
     # order-independent ([image, video] and [video, image] behave identically).
     if budget is not None:
         from .video_sampling import estimate_image_tokens
+
         for item in items:
             if item.get("type") != "image":
                 continue
-            path = item.get("image", "")
-            if path and os.path.isfile(path):
-                est = estimate_image_tokens(path,
+            source = item.get("image", "")
+            if isinstance(source, str) and (os.path.isfile(source) or
+                                            (source.startswith("data:image/")
+                                             and ";base64," in source)):
+                est = estimate_image_tokens(source,
                                             family,
                                             limits,
                                             do_resize=bool(
@@ -2041,11 +2044,20 @@ def _load_image_buffers(rt_module,
     for item in items:
         itype = item.get("type")
         if itype == "image":
-            path = item.get("image", "")
-            if path and os.path.isfile(path):
-                image = rt_module.load_image_from_path(path)
-                image.do_resize = bool(item.get("do_resize", True))
-                images.append(image)
+            img_content = item.get("image", "")
+            if isinstance(img_content, str) and os.path.isfile(img_content):
+                image = rt_module.load_image_from_path(img_content)
+            elif isinstance(img_content, str) and img_content.startswith(
+                    "data:image/") and ";base64," in img_content:
+                import base64
+
+                _, encoded = img_content.split(",", 1)
+                decoded = base64.b64decode(encoded, validate=True)
+                image = rt_module.load_image_from_bytes(decoded)
+            else:
+                raise ValueError("Unable to load image")
+            image.do_resize = bool(item.get("do_resize", True))
+            images.append(image)
         elif itype in ("video", "video_url"):
             from .video_sampling import MAX_DECODE_PIXELS, load_video_buffer
             if pixel_budget is None:
