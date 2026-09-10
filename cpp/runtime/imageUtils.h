@@ -99,6 +99,30 @@ ImageData loadImageFromFile(std::string const& path);
 ImageData loadImageFromMemory(unsigned char const* data, size_t size);
 
 /*!
+ * @brief Decode image encoded as base64 string
+ * @param input Base64 encoded string
+ * @return Decoded string
+ * @throws std::runtime_error if base64 string cannot be decoded
+ */
+std::string base64_decode(const std::string& input);
+
+/*!
+ * @brief Load image from base64 encoded string
+ * @param input Base64 encoded string
+ * @return Loaded image data
+ * @throws std::runtime_error if image cannot be loaded from base64 encoded string, or memory allocation fails
+ */
+ImageData loadImageFromBase64(std::string const& input);
+
+/*!
+ * @brief Load image from file or base64 encoded string
+ * @param input Path to image file or base64 encoded string
+ * @return Loaded image data
+ * @throws std::runtime_error if image cannot be loaded from file/base64 encoded string, or memory allocation fails
+ */
+ImageData loadImageFromFileOrBase64(std::string const& input);
+
+/*!
  * @brief Load a video by stacking a list of identically-sized image files into a single 4D `[T, H, W, C]` tensor
  * @param framePaths One file path per video frame (in temporal order)
  * @param fps Source frame rate used by the runner to compute MRoPE timestamps

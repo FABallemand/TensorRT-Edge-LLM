@@ -327,7 +327,7 @@ std::pair<std::unordered_map<std::string, std::string>, std::vector<rt::LLMGener
                         else if (msgContent.type == "image")
                         {
                             msgContent.content = contentItemJson["image"].get<std::string>();
-                            auto image = rt::imageUtils::loadImageFromFile(msgContent.content);
+                            auto image = rt::imageUtils::loadImageFromFileOrBase64(msgContent.content);
                             if (image.buffer != nullptr)
                             {
                                 image.doResize = contentItemJson.value("do_resize", true);

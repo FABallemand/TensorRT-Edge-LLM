@@ -116,6 +116,94 @@ ImageData loadImageFromMemory(unsigned char const* data, size_t size)
     return ImageData(std::move(imgTensor));
 }
 
+std::string base64_decode(std::string const& input)
+{
+    static constexpr char table[]
+        = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+          "abcdefghijklmnopqrstuvwxyz"
+          "0123456789+/";
+
+    std::string output;
+    int val = 0;
+    int bits = -8;
+
+    for (unsigned char c : input)
+    {
+        if (c == '=')
+        {
+            break;
+        }
+
+        char const* p = std::char_traits<char>::find(table, 64, c);
+        if (!p)
+        {
+            // Optionally ignore whitespace instead:
+            // if (c == ' ' || c == '\n' || c == '\r' || c == '\t') continue;
+            throw std::invalid_argument("Invalid Base64 character");
+        }
+
+        val = (val << 6) + static_cast<int>(p - table);
+        bits += 6;
+
+        if (bits >= 0)
+        {
+            output.push_back(static_cast<char>((val >> bits) & 0xFF));
+            bits -= 8;
+        }
+    }
+
+    return output;
+}
+
+ImageData loadImageFromBase64(std::string const& input)
+{
+    std::string base64 = input;
+
+    constexpr char const* kBase64Prefix = ";base64,";
+    auto prefixPos = base64.find(kBase64Prefix);
+
+    if (base64.rfind("data:", 0) == 0)
+    {
+        if (prefixPos == std::string::npos)
+        {
+            throw std::runtime_error("Invalid image data URI");
+        }
+
+        base64 = base64.substr(prefixPos + std::strlen(kBase64Prefix));
+    }
+
+    auto decoded = base64_decode(base64);
+
+    return loadImageFromMemory(reinterpret_cast<unsigned char const*>(decoded.data()), decoded.size());
+}
+
+ImageData loadImageFromFileOrBase64(std::string const& input)
+{
+    // Try to load image from path
+    namespace fs = std::filesystem;
+
+    // Check whether input refers to an existing regular file
+    std::error_code ec;
+    if (fs::is_regular_file(fs::path(input), ec))
+    {
+        auto image = loadImageFromFile(input);
+        if (image.buffer != nullptr)
+        {
+            return image;
+        }
+    }
+
+    // Try to load image from base64 string
+    // e.g.: data:image/png;base64,iVBORw0KGgo...
+    auto image = loadImageFromBase64(input);
+    if (image.buffer != nullptr)
+    {
+        return image;
+    }
+
+    throw std::runtime_error("Failed to load image from file or base64.");
+}
+
 ImageData loadVideoFromFrames(std::vector<std::string> const& framePaths, double const fps)
 {
     ELLM_CHECK(!framePaths.empty(), "loadVideoFromFrames: framePaths is empty");
