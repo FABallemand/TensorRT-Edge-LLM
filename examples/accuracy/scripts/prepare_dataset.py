@@ -41,6 +41,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from example_datasets.aime import convert_aime_dataset
 from example_datasets.coco import convert_coco_dataset
 from example_datasets.edgellm_dataset import DatasetConfig
+from example_datasets.gqa import convert_gqa_dataset
 from example_datasets.gsm8k import convert_gsm8k_dataset
 from example_datasets.humaneval import convert_humaneval_dataset
 from example_datasets.librispeech import convert_librispeech_dataset
@@ -60,6 +61,7 @@ from example_datasets.tts_eval import (convert_minimax_multilingual_dataset,
 DEFAULT_DATASETS = {
     "AIME": "Maxwell-Jia/AIME_2024",
     "COCO": "lmms-lab/COCO-Caption2017",
+    "GQA": "lmms-lab-encoder/GQA",
     "GSM8K": "openai/gsm8k",
     "HumanEval": "openai/openai_humaneval",
     "LibriSpeech": "openslr/librispeech_asr",
@@ -89,6 +91,7 @@ LOCAL_ONLY_DATASETS = {
 DEFAULT_MAX_GENERATE_LENGTHS = {
     "AIME": 512,
     "COCO": 64,
+    "GQA": 512,
     "GSM8K": 512,
     "HumanEval": 512,
     "LibriSpeech": 256,
@@ -174,7 +177,7 @@ def main():
                         type=str,
                         required=True,
                         choices=[
-                            "AIME", "COCO", "GSM8K", "HumanEval",
+                            "AIME", "COCO", "GQA", "GSM8K", "HumanEval",
                             "LibriSpeech", "MATH500", "MMBench", "MMLU",
                             "MMLU_Pro", "MMMU", "MMMU_VLMEvalkit", "MMMU_Pro",
                             "MMStar", "MTBench", "SeedTTSEval",
@@ -398,6 +401,11 @@ def main():
             convert_librispeech_dataset(config=config,
                                         dataset_name_or_dir=dataset_path,
                                         output_dir=args.output_dir)
+            
+        elif args.dataset == "GQA":
+            convert_gqa_dataset(config=config,
+                                dataset_name_or_dir=dataset_path,
+                                output_dir=args.output_dir)
     except Exception as e:
         print(f"Error converting dataset: {e}", file=sys.stderr)
         sys.exit(1)
