@@ -53,6 +53,7 @@ from example_datasets.mmmu import (convert_mmmu_dataset,
 from example_datasets.mmstar import convert_mmstar_dataset
 from example_datasets.mtbench import convert_mtbench_dataset
 from example_datasets.omnibench import convert_omnibench_dataset
+from example_datasets.textvqa import convert_textvqa_dataset
 from example_datasets.tts_eval import (convert_minimax_multilingual_dataset,
                                        convert_seed_tts_eval_dataset)
 
@@ -74,6 +75,7 @@ DEFAULT_DATASETS = {
     "MTBench": "philschmid/mt-bench",
     "MiniMaxMultilingual": "MiniMaxAI/TTS-Multilingual-Test-Set",
     "OmniBench": "m-a-p/OmniBench",
+    "TextVQA": "lmms-lab-encoder/textvqa",
 }
 
 # Datasets that require manual download — no HuggingFace auto-download.
@@ -104,6 +106,7 @@ DEFAULT_MAX_GENERATE_LENGTHS = {
     "SeedTTSEval": 2048,
     "MiniMaxMultilingual": 2048,
     "OmniBench": 128,
+    "TextVQA": 20,
 }
 
 
@@ -113,7 +116,7 @@ def get_dataset_path(dataset_type: str,
     Determine the dataset path to use, checking for local cache first.
 
     Args:
-        dataset_type: Type of dataset (AIME, GSM8K, HumanEval, MATH500, MMLU, MMLU_Pro, MMMU, MMMU_Pro, MMStar, MTBench)
+        dataset_type: Type of dataset (AIME, GSM8K, HumanEval, MATH500, MMLU, MMLU_Pro, MMMU, MMMU_Pro, MMStar, MTBench, TextVQA)
         dataset_name_or_dir: User-specified dataset name or directory
 
     Returns:
@@ -178,7 +181,7 @@ def main():
                             "LibriSpeech", "MATH500", "MMBench", "MMLU",
                             "MMLU_Pro", "MMMU", "MMMU_VLMEvalkit", "MMMU_Pro",
                             "MMStar", "MTBench", "SeedTTSEval",
-                            "MiniMaxMultilingual", "OmniBench"
+                            "MiniMaxMultilingual", "OmniBench", "TextVQA",
                         ],
                         help="Dataset type to convert")
 
@@ -396,6 +399,11 @@ def main():
 
         elif args.dataset == "LibriSpeech":
             convert_librispeech_dataset(config=config,
+                                        dataset_name_or_dir=dataset_path,
+                                        output_dir=args.output_dir)
+            
+        elif args.dataset == "TextVQA":
+                convert_textvqa_dataset(config=config,
                                         dataset_name_or_dir=dataset_path,
                                         output_dir=args.output_dir)
     except Exception as e:
