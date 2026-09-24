@@ -45,6 +45,7 @@ from example_datasets.gsm8k import convert_gsm8k_dataset
 from example_datasets.humaneval import convert_humaneval_dataset
 from example_datasets.librispeech import convert_librispeech_dataset
 from example_datasets.math500 import convert_math500_dataset
+from example_datasets.mme import convert_mme_dataset
 from example_datasets.mmbench import convert_mmbench_dataset
 from example_datasets.mmlu import convert_mmlu_dataset
 from example_datasets.mmlu_pro import convert_mmlu_pro_dataset
@@ -64,6 +65,7 @@ DEFAULT_DATASETS = {
     "HumanEval": "openai/openai_humaneval",
     "LibriSpeech": "openslr/librispeech_asr",
     "MATH500": "HuggingFaceH4/MATH-500",
+    "MME": "lmms-lab-encoder/MME",
     "MMLU": "cais/mmlu",
     "MMLU_Pro": "TIGER-Lab/MMLU-Pro",
     "MMMU": "MMMU/MMMU",
@@ -93,6 +95,7 @@ DEFAULT_MAX_GENERATE_LENGTHS = {
     "HumanEval": 512,
     "LibriSpeech": 256,
     "MATH500": 512,
+    "MME": 20,
     "MMLU": 1,
     "MMLU_Pro": 1,
     "MMMU": 20,
@@ -113,7 +116,7 @@ def get_dataset_path(dataset_type: str,
     Determine the dataset path to use, checking for local cache first.
 
     Args:
-        dataset_type: Type of dataset (AIME, GSM8K, HumanEval, MATH500, MMLU, MMLU_Pro, MMMU, MMMU_Pro, MMStar, MTBench)
+        dataset_type: Type of dataset (AIME, GSM8K, HumanEval, MATH500, MME, MMLU, MMLU_Pro, MMMU, MMMU_Pro, MMStar, MTBench)
         dataset_name_or_dir: User-specified dataset name or directory
 
     Returns:
@@ -175,11 +178,11 @@ def main():
                         required=True,
                         choices=[
                             "AIME", "COCO", "GSM8K", "HumanEval",
-                            "LibriSpeech", "MATH500", "MMBench", "MMLU",
+                            "LibriSpeech", "MATH500", "MME", "MMBench", "MMLU",
                             "MMLU_Pro", "MMMU", "MMMU_VLMEvalkit", "MMMU_Pro",
                             "MMStar", "MTBench", "SeedTTSEval",
                             "MiniMaxMultilingual", "OmniBench"
-                        ],
+                        ],  # TODO replace with DEFAULT_DATASET.keys() or something
                         help="Dataset type to convert")
 
     parser.add_argument("--output_dir",
@@ -398,6 +401,11 @@ def main():
             convert_librispeech_dataset(config=config,
                                         dataset_name_or_dir=dataset_path,
                                         output_dir=args.output_dir)
+            
+        elif args.dataset == "MME":
+            convert_mme_dataset(config=config,
+                                dataset_name_or_dir=dataset_path,
+                                output_dir=args.output_dir)
     except Exception as e:
         print(f"Error converting dataset: {e}", file=sys.stderr)
         sys.exit(1)
