@@ -91,7 +91,7 @@ class TextVQADataset(EdgeLLMDataset):
         return image_paths
 
     def extract_answer(self, data: dict[str, Any]) -> str | None:
-        """Extract the correct answer from MMMU data."""
+        """Extract the correct answer from TextVQA data."""
         assert "answers" in data, "answers are required"
         return max(
             set(data["answers"]), key=data["answers"].count
@@ -133,7 +133,7 @@ def convert_textvqa_dataset(
 
     # Use provided config
 
-    edge_llm_mmmu_dataset = TextVQADataset(
+    edge_llm_textvqa_dataset = TextVQADataset(
         dataset=concat_textvqa_dataset,
         config=config,
         vlmevalkit=vlmevalkit,
@@ -141,7 +141,7 @@ def convert_textvqa_dataset(
     )
 
     print(f"Processing TextVQA dataset with config: {config}")
-    edge_llm_mmmu_dataset.process_and_save_dataset("textvqa_dataset.json")
+    edge_llm_textvqa_dataset.process_and_save_dataset("textvqa_dataset.json")
 
     print(f"Successfully converted TextVQA dataset to {output_dir}")
-    return edge_llm_mmmu_dataset
+    return edge_llm_textvqa_dataset
