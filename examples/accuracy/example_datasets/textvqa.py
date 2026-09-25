@@ -102,6 +102,7 @@ def convert_textvqa_dataset(
     config: DatasetConfig,
     dataset_name_or_dir: str = "lmms-lab-encoder/textvqa",
     output_dir: str | os.PathLike = "textvqa_dataset",
+    splits: list[str] | None = None,
     vlmevalkit: bool = False,
 ):
     """
@@ -111,6 +112,7 @@ def convert_textvqa_dataset(
         config: DatasetConfig object with processing parameters
         dataset_name_or_dir: HuggingFace dataset name or local directory path
         output_dir: Output directory for converted dataset
+        splits: Dataset splits, e.g.: "train", "validation" or "test".
         vlmevalkit: Whether to convert to VLMEvalkit format
     """
     # https://huggingface.co/datasets/lmms-lab-encoder/textvqa
@@ -121,12 +123,16 @@ def convert_textvqa_dataset(
 
     print(f"Converting TextVQA dataset from {dataset_name_or_dir} to {output_dir}")
     configs = get_dataset_config_names("lmms-lab-encoder/textvqa")
+    if not splits:
+        print("No split provided, defaults to: ['validation']")
+        splits = ["validation"]
     textvqa_datasets = []
     for config_name in configs:
-        textvqa_dataset = load_dataset(
-            "lmms-lab-encoder/textvqa", config_name, split="validation"
-        )
-        textvqa_datasets.append(textvqa_dataset)
+        for split in splits:
+            textvqa_dataset = load_dataset(
+                "lmms-lab-encoder/textvqa", config_name, split=split
+            )
+            textvqa_datasets.append(textvqa_dataset)
     # concat the datasets
     concat_textvqa_dataset = concatenate_datasets(textvqa_datasets)
     print(f"Loaded TextVQA dataset with {len(concat_textvqa_dataset)} examples")

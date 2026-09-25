@@ -208,6 +208,19 @@ def main():
     )
 
     parser.add_argument(
+        "--splits",
+        type=str,
+        nargs="+",
+        required=False,
+        help="""
+        Split for Hugging Face dataset.
+
+        Example:
+        - TextVQA: "train", "validation" or "test"
+        """,
+    )
+
+    parser.add_argument(
         "--num_shot",
         type=int,
         default=5,
@@ -405,7 +418,8 @@ def main():
         elif args.dataset == "TextVQA":
                 convert_textvqa_dataset(config=config,
                                         dataset_name_or_dir=dataset_path,
-                                        output_dir=args.output_dir)
+                                        output_dir=args.output_dir,
+                                        splits=args.splits)
     except Exception as e:
         print(f"Error converting dataset: {e}", file=sys.stderr)
         sys.exit(1)
