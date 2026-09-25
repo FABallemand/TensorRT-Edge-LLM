@@ -255,10 +255,35 @@ class GQADataset(EdgeLLMDataset):
         return str(output_path)
 
 
+def check_subsets(subsets: list[str]) -> bool:
+    """
+    Check if provided list of subsets is correct.
+
+    For this dataset, each "instruction" subset must come with its
+    "image" subset.
+
+    Args:
+        subsets (list[str]): List of subsets.
+
+    Returns:
+        bool: True if provided list of subsets is correct, False
+            otherwise.
+    """
+    available_subsets = get_dataset_config_names("lmms-lab-encoder/GQA")
+    if not all(s in available_subsets for s in subsets):
+        return False
+    instruct_subsets = {
+        s.rsplit("_", 1)[0] for s in subsets if s.endswith("_instructions")
+    }
+    image_subsets = {s.rsplit("_", 1)[0] for s in subsets if s.endswith("_images")}
+    return instruct_subsets == image_subsets
+
+
 def convert_gqa_dataset(
     config: DatasetConfig,
     dataset_name_or_dir: str = "lmms-lab-encoder/GQA",
     output_dir: str | os.PathLike = "gqa_dataset",
+    subsets: list[str] | None = None,
     vlmevalkit: bool = False,
 ):
     """
@@ -268,6 +293,8 @@ def convert_gqa_dataset(
         config: DatasetConfig object with processing parameters
         dataset_name_or_dir: HuggingFace dataset name or local directory path
         output_dir: Output directory for converted dataset
+        subsets: Dataset subset, e.g.: "testdev_balanced_instructions",
+            "testdev_balanced_images"...
         vlmevalkit: Whether to convert to VLMEvalkit format
     """
     # https://huggingface.co/datasets/lmms-lab-encoder/GQA
@@ -277,20 +304,27 @@ def convert_gqa_dataset(
         )
 
     print(f"Converting GQA dataset from {dataset_name_or_dir} to {output_dir}")
-    # TODO do not use every subset (too large + duplicates)
-    # configs = get_dataset_config_names("lmms-lab-encoder/GQA")
-    configs = ["testdev_balanced_instructions", "testdev_balanced_images"]
+    if not subsets:
+        print(
+            "No subset provided, defaults to: "
+            "['testdev_balanced_instructions', 'testdev_balanced_images']"
+        )
+        subsets = ["testdev_balanced_instructions", "testdev_balanced_images"]
+    elif not check_subsets(subsets):
+        print(
+            "Provided subsets are not usable, defaults to: "
+            "['testdev_balanced_instructions', 'testdev_balanced_images']"
+        )
+        subsets = ["testdev_balanced_instructions", "testdev_balanced_images"]
     gqa_datasets = []
     gqa_img_datasets = []
-    for config_name in configs:
-        if config_name.endswith("_instructions"):
-            gqa_dataset = load_dataset(
-                "lmms-lab-encoder/GQA", config_name, split="testdev"
-            )
+    for subset in subsets:
+        if subset.endswith("_instructions"):
+            gqa_dataset = load_dataset("lmms-lab-encoder/GQA", subset, split="testdev")
             gqa_datasets.append(gqa_dataset)
-        elif config_name.endswith("_images"):
+        elif subset.endswith("_images"):
             gqa_img_dataset = load_dataset(
-                "lmms-lab-encoder/GQA", config_name, split="testdev"
+                "lmms-lab-encoder/GQA", subset, split="testdev"
             )
             gqa_img_datasets.append(gqa_img_dataset)
 
