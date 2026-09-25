@@ -74,6 +74,8 @@ class GQADataset(EdgeLLMDataset):
     ):
         super().__init__(dataset=dataset, config=config, **kwargs)
         self.img_dataset = img_dataset
+        sample_count = min(self.config.max_samples, len(self.img_dataset))
+        self.img_dataset = self.img_dataset.select(range(sample_count))
         self.images_dir = os.path.join(self.output_dir, "images")
         os.makedirs(self.images_dir, exist_ok=True)
         self.vlmevalkit = vlmevalkit
