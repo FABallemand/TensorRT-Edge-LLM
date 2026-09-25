@@ -199,7 +199,7 @@ def main():
     )
 
     parser.add_argument(
-        "--subset",
+        "--subsets",
         type=str,
         nargs="+",
         required=False,
@@ -207,7 +207,7 @@ def main():
         Subset for Hugging Face dataset.
 
         Example:
-        - MMMU_Pro dataset: "vision", "standard (10 options)" or "standard (4 options)"
+        - MMMU_Pro: "vision", "standard (10 options)" or "standard (4 options)"
         - GQA: "testdev_balanced_instructions", "testdev_balanced_images", "testdev_all_instructions", "testdev_all_images"...
         """,
     )
@@ -328,11 +328,14 @@ def main():
                                  vlmevalkit=True)
 
         elif args.dataset == "MMMU_Pro":
-            print(f"Using subset: {args.subset}")
+            subset = "vision"
+            if len(args.subsets) == 1:
+                subset = args.subsets[0]
+            print(f"Using subsets: {subset}")
             convert_mmmu_pro_dataset(config=config,
                                      dataset_name_or_dir=dataset_path,
                                      output_dir=args.output_dir,
-                                     subset=args.subset)
+                                     subset=subset)
 
         elif args.dataset == "HumanEval":
             convert_humaneval_dataset(config=config,
@@ -411,7 +414,7 @@ def main():
             convert_gqa_dataset(config=config,
                                 dataset_name_or_dir=dataset_path,
                                 output_dir=args.output_dir,
-                                subsets=args.subset)
+                                subsets=args.subsets)
     except Exception as e:
         print(f"Error converting dataset: {e}", file=sys.stderr)
         sys.exit(1)

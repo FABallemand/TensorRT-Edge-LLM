@@ -270,7 +270,7 @@ def check_subsets(subsets: list[str]) -> bool:
             otherwise.
     """
     available_subsets = get_dataset_config_names("lmms-lab-encoder/GQA")
-    if not all(s in available_subsets for s in subsets):
+    if any(s not in available_subsets for s in subsets):
         return False
     instruct_subsets = {
         s.rsplit("_", 1)[0] for s in subsets if s.endswith("_instructions")
