@@ -279,7 +279,7 @@ def convert_gqa_dataset(
     print(f"Converting GQA dataset from {dataset_name_or_dir} to {output_dir}")
     # TODO do not use every subset (too large + duplicates)
     # configs = get_dataset_config_names("lmms-lab-encoder/GQA")
-    configs = ["testdev_all_instructions", "testdev_all_images"]
+    configs = ["testdev_balanced_instructions", "testdev_balanced_images"]
     gqa_datasets = []
     gqa_img_datasets = []
     for config_name in configs:
